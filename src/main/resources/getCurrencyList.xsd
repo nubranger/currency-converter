@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.lb.lt/WebServices/FxRates" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="CcyTbl" type="fxr:CcyTblType" xmlns:fxr="http://www.lb.lt/WebServices/FxRates"/>
+  <xs:complexType name="CcyNmType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="lang" use="optional"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  <xs:complexType name="CcyNtryType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Ccy"/>
+      <xs:element type="fxr:CcyNmType" name="CcyNm" maxOccurs="unbounded" minOccurs="0" xmlns:fxr="http://www.lb.lt/WebServices/FxRates"/>
+      <xs:element type="xs:string" name="CcyNbr"/>
+      <xs:element name="CcyMnrUnts">
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="0"/>
+            <xs:enumeration value="2"/>
+            <xs:enumeration value="3"/>
+            <xs:enumeration value="5"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="CcyTblType">
+    <xs:sequence>
+      <xs:element type="fxr:CcyNtryType" name="CcyNtry" maxOccurs="unbounded" minOccurs="0" xmlns:fxr="http://www.lb.lt/WebServices/FxRates"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
