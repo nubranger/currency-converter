@@ -18,7 +18,7 @@ import java.util.Map;
 public class XMLService {
 
     /**
-     * Get currency data from xml to list
+     * Add currency data from xml to the list
      */
     public List<Rate> getCurrentFxRates() {
 
@@ -58,7 +58,7 @@ public class XMLService {
     }
 
     /**
-     * Get currency name list
+     * Add currency name to the list
      */
     public Map<String, String> getCurrencyList() {
 

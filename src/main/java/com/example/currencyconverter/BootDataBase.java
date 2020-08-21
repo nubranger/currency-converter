@@ -24,7 +24,7 @@ public class BootDataBase implements ApplicationListener<ContextRefreshedEvent> 
     }
 
     /**
-     * Get data from xml to DB
+     * Add data from xml to the DB
      */
     private void initData() {
 

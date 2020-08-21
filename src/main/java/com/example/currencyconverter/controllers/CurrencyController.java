@@ -35,15 +35,32 @@ public class CurrencyController {
                            @RequestParam(value = "selectedCurrencyCode", required = false) String selectedCurrencyCode,
                            @RequestParam(value = "amount", required = false) String amount) {
 
-
         XMLService xmlService = new XMLService();
         Map<String, String> currencyMap = xmlService.getCurrencyList();
-
         List<Rate> currentFxRates = (List<Rate>) rateRepository.findAll();
 
         model.addAttribute("currentFxRates", currentFxRates);
         model.addAttribute("currencyMap", currencyMap);
 
+        /**
+         * Save to DB amount, currency, date and time entered and selected by user
+         */
+        if (amount != null && selectedCurrencyCode != null) {
+
+            String datePattern = "yyyy-MM-dd HH:mm:ss";
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
+            String ldt = simpleDateFormat.format(new Date());
+
+            UserLogging userLogging = new UserLogging();
+            userLogging.setAmount(amount);
+            userLogging.setSelectedCurrency(selectedCurrencyCode + " - " + currencyMap.get(selectedCurrencyCode));
+            userLogging.setDateTime(ldt);
+            userLoggingRepository.save(userLogging);
+        }
+
+        /**
+         * If amount is null or empty, default value will be 1
+         */
         if (amount == null || amount.equals("")) {
             model.addAttribute("amount", amount = "1");
         } else {
@@ -64,7 +81,7 @@ public class CurrencyController {
         }
 
         /**
-         * Check if selected currency not null or empty. If so, default currency would be USD
+         * If selected currency is null or empty, default currency will be USD
          */
         if (selectedCurrencyCode == null || selectedCurrencyCode.equals("")) {
             model.addAttribute("selectedCurrencyCode", selectedCurrencyCode = "USD");
@@ -97,23 +114,6 @@ public class CurrencyController {
             String currencyResult = df.format(bd3);
             model.addAttribute("currencyResult", currencyResult);
             model.addAttribute("currencyRate", currencyRate);
-        }
-
-
-        /**
-         * Save to DB amount, currency, date and time entered and selected by user
-         */
-        if (amount != null && selectedCurrencyCode != null) {
-
-            String datePattern = "yyyy-MM-dd HH:mm:ss";
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
-            String ldt = simpleDateFormat.format(new Date());
-
-            UserLogging userLogging = new UserLogging();
-            userLogging.setAmount(amount);
-            userLogging.setSelectedCurrency(selectedCurrencyCode + " - " + currencyMap.get(selectedCurrencyCode));
-            userLogging.setDateTime(ldt);
-            userLoggingRepository.save(userLogging);
         }
 
         return "index";
