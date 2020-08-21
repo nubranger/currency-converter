@@ -3,39 +3,35 @@ package com.example.currencyconverter.controllers;
 import com.example.currencyconverter.model.Rate;
 import com.example.currencyconverter.repository.RateRepository;
 import com.example.currencyconverter.repository.UserLoggingRepository;
+import com.example.currencyconverter.services.CurrencyService;
 import com.example.currencyconverter.services.XMLService;
-import com.example.currencyconverter.userlogging.UserLogging;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Controller
 public class CurrencyController {
 
     RateRepository rateRepository;
     UserLoggingRepository userLoggingRepository;
+    XMLService xmlService;
+    CurrencyService currencyService;
 
-    public CurrencyController(RateRepository rateRepository, UserLoggingRepository userLoggingRepository) {
+    public CurrencyController(RateRepository rateRepository, UserLoggingRepository userLoggingRepository, XMLService xmlService, CurrencyService currencyService) {
         this.rateRepository = rateRepository;
         this.userLoggingRepository = userLoggingRepository;
+        this.xmlService = xmlService;
+        this.currencyService = currencyService;
     }
 
-    @GetMapping({"/",""})
+    @GetMapping({"/", ""})
     public String getIndex(Model model,
                            @RequestParam(value = "selectedCurrencyCode", required = false) String selectedCurrencyCode,
                            @RequestParam(value = "amount", required = false) String amount) {
 
-        XMLService xmlService = new XMLService();
         Map<String, String> currencyMap = xmlService.getCurrencyList();
         List<Rate> currentFxRates = (List<Rate>) rateRepository.findAll();
 
@@ -45,28 +41,15 @@ public class CurrencyController {
         /**
          * Save to DB amount, currency, date and time entered and selected by user
          */
-        saveUserActivityToDb(amount, selectedCurrencyCode, currencyMap, userLoggingRepository);
+        currencyService.saveUserActivityToDb(amount, selectedCurrencyCode, currencyMap, userLoggingRepository);
 
         /**
-         * If amount is null or empty, default value will be 1
+         * If amount is null, empty not a number, default value will be 1
          */
-        if (amount == null || amount.equals("")) {
+        if (amount == null || amount.equals("") || !currencyService.isNumber(amount)) {
             model.addAttribute("amount", amount = "1");
         } else {
             model.addAttribute("amount", amount);
-        }
-
-        /**
-         * Check pattern (only numbers)
-         */
-        String regex = "^[0-9]+$";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(amount);
-
-        if (matcher.matches()) {
-            model.addAttribute("amount", amount);
-        } else {
-            model.addAttribute("amount", amount = "1");
         }
 
         /**
@@ -82,66 +65,15 @@ public class CurrencyController {
         /**
          * Get selected currency rate from DB
          */
-        Double currencyRate = getSelectedCurrencyRate(selectedCurrencyCode, currentFxRates);
+        Double currencyRate = currencyService.getSelectedCurrencyRate(selectedCurrencyCode, currentFxRates);
         model.addAttribute("currencyRate", currencyRate);
 
         /**
          * Convert currency amount with BigDecimal class and convert to string
          */
-        String currencyResult = convertCurrency(amount, currencyRate);
+        String currencyResult = currencyService.convertCurrency(amount, currencyRate);
         model.addAttribute("currencyResult", currencyResult);
 
         return "index";
     }
-
-    /**
-     * Convert currency amount with BigDecimal class and convert to string
-     */
-    public static String convertCurrency(String amount, Double currencyRate) {
-        String currencyResult = "";
-
-        if (currencyRate != null) {
-            BigDecimal bd1 = new BigDecimal(amount);
-            BigDecimal bd2 = new BigDecimal(currencyRate);
-            BigDecimal bd3 = bd1.multiply(bd2);
-            DecimalFormat df = new DecimalFormat();
-            df.setMaximumFractionDigits(3);
-            df.setMinimumFractionDigits(3);
-
-            currencyResult = df.format(bd3);
-        }
-        return currencyResult;
-    }
-
-    /**
-     * Get selected currency rate from DB
-     */
-    public static Double getSelectedCurrencyRate(String selectedCurrencyCode, List<Rate> currentFxRates) {
-        Double currencyRate = null;
-        for (Rate tmp : currentFxRates) {
-            if (tmp.getCurrency().equals(selectedCurrencyCode)) {
-                currencyRate = tmp.getRate();
-            }
-        }
-        return currencyRate;
-    }
-
-    /**
-     * Save to DB amount, currency, date and time entered and selected by user
-     */
-    public static void saveUserActivityToDb(String amount, String selectedCurrencyCode, Map<String, String> currencyMap, UserLoggingRepository userLoggingRepository) {
-        if (amount != null && selectedCurrencyCode != null) {
-
-            String datePattern = "yyyy-MM-dd HH:mm:ss";
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
-            String ldt = simpleDateFormat.format(new Date());
-
-            UserLogging userLogging = new UserLogging();
-            userLogging.setAmount(amount);
-            userLogging.setSelectedCurrency(selectedCurrencyCode + " - " + currencyMap.get(selectedCurrencyCode));
-            userLogging.setDateTime(ldt);
-            userLoggingRepository.save(userLogging);
-        }
-    }
-
 }

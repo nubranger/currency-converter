@@ -11,11 +11,12 @@ import java.util.List;
 @Component
 public class BootDataBase implements ApplicationListener<ContextRefreshedEvent> {
 
-
     private RateRepository rateRepository;
+    private XMLService xmlService;
 
-    public BootDataBase(RateRepository rateRepository) {
+    public BootDataBase(RateRepository rateRepository, XMLService xmlService) {
         this.rateRepository = rateRepository;
+        this.xmlService = xmlService;
     }
 
     @Override
@@ -28,7 +29,6 @@ public class BootDataBase implements ApplicationListener<ContextRefreshedEvent> 
      */
     private void initData() {
 
-        XMLService xmlService = new XMLService();
         List<Rate> ratesXML = xmlService.getCurrentFxRates();
 
         if (rateRepository.count() == 0) {
