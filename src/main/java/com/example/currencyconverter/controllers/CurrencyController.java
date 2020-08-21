@@ -30,7 +30,7 @@ public class CurrencyController {
         this.userLoggingRepository = userLoggingRepository;
     }
 
-    @GetMapping("/")
+    @GetMapping({"/",""})
     public String getIndex(Model model,
                            @RequestParam(value = "selectedCurrencyCode", required = false) String selectedCurrencyCode,
                            @RequestParam(value = "amount", required = false) String amount) {
@@ -45,18 +45,7 @@ public class CurrencyController {
         /**
          * Save to DB amount, currency, date and time entered and selected by user
          */
-        if (amount != null && selectedCurrencyCode != null) {
-
-            String datePattern = "yyyy-MM-dd HH:mm:ss";
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
-            String ldt = simpleDateFormat.format(new Date());
-
-            UserLogging userLogging = new UserLogging();
-            userLogging.setAmount(amount);
-            userLogging.setSelectedCurrency(selectedCurrencyCode + " - " + currencyMap.get(selectedCurrencyCode));
-            userLogging.setDateTime(ldt);
-            userLoggingRepository.save(userLogging);
-        }
+        saveUserActivityToDb(amount, selectedCurrencyCode, currencyMap, userLoggingRepository);
 
         /**
          * If amount is null or empty, default value will be 1
@@ -85,24 +74,32 @@ public class CurrencyController {
          */
         if (selectedCurrencyCode == null || selectedCurrencyCode.equals("")) {
             model.addAttribute("selectedCurrencyCode", selectedCurrencyCode = "USD");
-            model.addAttribute("selectedCurrencyName", currencyMap.get(selectedCurrencyCode));
         } else {
             model.addAttribute("selectedCurrencyCode", selectedCurrencyCode);
-            model.addAttribute("selectedCurrencyName", currencyMap.get(selectedCurrencyCode));
         }
+        model.addAttribute("selectedCurrencyName", currencyMap.get(selectedCurrencyCode));
 
         /**
          * Get selected currency rate from DB
          */
-        Double currencyRate = null;
-        for (Rate tmp : currentFxRates) {
-            if (tmp.getCurrency().equals(selectedCurrencyCode)) {
-                currencyRate = tmp.getRate();
-            }
-        }
+        Double currencyRate = getSelectedCurrencyRate(selectedCurrencyCode, currentFxRates);
+        model.addAttribute("currencyRate", currencyRate);
+
         /**
          * Convert currency amount with BigDecimal class and convert to string
          */
+        String currencyResult = convertCurrency(amount, currencyRate);
+        model.addAttribute("currencyResult", currencyResult);
+
+        return "index";
+    }
+
+    /**
+     * Convert currency amount with BigDecimal class and convert to string
+     */
+    public static String convertCurrency(String amount, Double currencyRate) {
+        String currencyResult = "";
+
         if (currencyRate != null) {
             BigDecimal bd1 = new BigDecimal(amount);
             BigDecimal bd2 = new BigDecimal(currencyRate);
@@ -111,11 +108,40 @@ public class CurrencyController {
             df.setMaximumFractionDigits(3);
             df.setMinimumFractionDigits(3);
 
-            String currencyResult = df.format(bd3);
-            model.addAttribute("currencyResult", currencyResult);
-            model.addAttribute("currencyRate", currencyRate);
+            currencyResult = df.format(bd3);
         }
-
-        return "index";
+        return currencyResult;
     }
+
+    /**
+     * Get selected currency rate from DB
+     */
+    public static Double getSelectedCurrencyRate(String selectedCurrencyCode, List<Rate> currentFxRates) {
+        Double currencyRate = null;
+        for (Rate tmp : currentFxRates) {
+            if (tmp.getCurrency().equals(selectedCurrencyCode)) {
+                currencyRate = tmp.getRate();
+            }
+        }
+        return currencyRate;
+    }
+
+    /**
+     * Save to DB amount, currency, date and time entered and selected by user
+     */
+    public static void saveUserActivityToDb(String amount, String selectedCurrencyCode, Map<String, String> currencyMap, UserLoggingRepository userLoggingRepository) {
+        if (amount != null && selectedCurrencyCode != null) {
+
+            String datePattern = "yyyy-MM-dd HH:mm:ss";
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
+            String ldt = simpleDateFormat.format(new Date());
+
+            UserLogging userLogging = new UserLogging();
+            userLogging.setAmount(amount);
+            userLogging.setSelectedCurrency(selectedCurrencyCode + " - " + currencyMap.get(selectedCurrencyCode));
+            userLogging.setDateTime(ldt);
+            userLoggingRepository.save(userLogging);
+        }
+    }
+
 }
