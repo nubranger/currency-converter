@@ -1,30 +1,28 @@
 package com.example.currencyconverter.controllers;
 
 import com.example.currencyconverter.model.Rate;
-import com.example.currencyconverter.repository.RateRepository;
-import com.example.currencyconverter.repository.UserLoggingRepository;
 import com.example.currencyconverter.services.CurrencyService;
+import com.example.currencyconverter.services.UserLoggingService;
 import com.example.currencyconverter.services.XMLService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
 import java.util.List;
 import java.util.Map;
 
 @Controller
 public class CurrencyController {
 
-    RateRepository rateRepository;
-    UserLoggingRepository userLoggingRepository;
-    XMLService xmlService;
-    CurrencyService currencyService;
+    private XMLService xmlService;
+    private CurrencyService currencyService;
+    private UserLoggingService userLoggingService;
 
-    public CurrencyController(RateRepository rateRepository, UserLoggingRepository userLoggingRepository, XMLService xmlService, CurrencyService currencyService) {
-        this.rateRepository = rateRepository;
-        this.userLoggingRepository = userLoggingRepository;
+    public CurrencyController(XMLService xmlService, CurrencyService currencyService, UserLoggingService userLoggingService) {
         this.xmlService = xmlService;
         this.currencyService = currencyService;
+        this.userLoggingService = userLoggingService;
     }
 
     @GetMapping({"/", ""})
@@ -33,7 +31,7 @@ public class CurrencyController {
                            @RequestParam(value = "amount", required = false) String amount) {
 
         Map<String, String> currencyMap = xmlService.getCurrencyList();
-        List<Rate> currentFxRates = (List<Rate>) rateRepository.findAll();
+        List<Rate> currentFxRates = currencyService.currentFxRates();
 
         model.addAttribute("currentFxRates", currentFxRates);
         model.addAttribute("currencyMap", currencyMap);
@@ -41,7 +39,9 @@ public class CurrencyController {
         /**
          * Save to DB amount, currency, date and time entered and selected by user
          */
-        currencyService.saveUserActivityToDb(amount, selectedCurrencyCode, currencyMap, userLoggingRepository);
+        if (amount != null && !amount.equals("") && selectedCurrencyCode != null && currencyService.isNumber(amount)) {
+            userLoggingService.saveUserActivityToDb(amount, selectedCurrencyCode);
+        }
 
         /**
          * If amount is null, empty not a number, default value will be 1
@@ -65,7 +65,7 @@ public class CurrencyController {
         /**
          * Get selected currency rate from DB
          */
-        Double currencyRate = currencyService.getSelectedCurrencyRate(selectedCurrencyCode, currentFxRates);
+        Double currencyRate = currencyService.getSelectedCurrencyRate(selectedCurrencyCode);
         model.addAttribute("currencyRate", currencyRate);
 
         /**
