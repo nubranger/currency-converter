@@ -7,5 +7,6 @@ import java.util.Map;
 public interface XMLService {
 
     List<Rate> getCurrentFxRates();
+
     Map<String, String> getCurrencyList();
 }

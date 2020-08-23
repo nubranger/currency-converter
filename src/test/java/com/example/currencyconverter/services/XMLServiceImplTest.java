@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.util.List;
 import java.util.Map;
 
@@ -19,13 +18,13 @@ class XMLServiceImplTest {
 
     @Test
     void getCurrentFxRates() {
-       List<Rate> result = xmlServiceImpl.getCurrentFxRates();
+        List<Rate> result = xmlServiceImpl.getCurrentFxRates();
         assertNotNull(result);
     }
 
     @Test
     void getCurrencyList() {
-       Map<String, String> result = xmlServiceImpl.getCurrencyList();
-       assertNotNull(result);
+        Map<String, String> result = xmlServiceImpl.getCurrencyList();
+        assertNotNull(result);
     }
 }

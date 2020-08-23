@@ -3,7 +3,6 @@ package com.example.currencyconverter.services;
 import com.example.currencyconverter.repository.UserLoggingRepository;
 import com.example.currencyconverter.userlogging.UserLogging;
 import org.springframework.stereotype.Service;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;

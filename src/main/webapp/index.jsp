@@ -19,7 +19,6 @@
     <h1 class="display-4"> Currency Converter</h1>
 
     <form class="form-inline" method="get" action="/">
-
         <label style="font-size: larger" class="mr-sm-2">Amount of EUR </label>
         <input type="text" class="form-control mb-2 mr-sm-2" name="amount">
         <label style="font-size: larger" class="mr-sm-2">To</label>
@@ -35,7 +34,6 @@
     <h2 class="lead alert alert-primary"> ${amount} EUR to ${selectedCurrencyCode}
         = ${currencyResult} ${selectedCurrencyName} </h2>
     <h3 class="lead alert alert-warning">Rate is ${currencyRate} </h3>
-
 </div>
 
 </body>

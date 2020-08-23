@@ -7,10 +7,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.Mockito.verify;
@@ -22,10 +21,10 @@ class UserLoggingServiceImplTest {
     UserLoggingRepository userLoggingRepository;
 
     @Mock
-    Map<String, String> currencyMap;
+    Map<String, String> currencyMap = new HashMap<>();
 
     @Mock
-    XMLService  xmlService;
+    XMLService xmlService;
 
     @InjectMocks
     UserLoggingServiceImpl userLoggingServiceImpl;
@@ -38,9 +37,8 @@ class UserLoggingServiceImplTest {
         UserLogging userLogging = new UserLogging();
         userLogging.setDateTime(ldt);
         userLogging.setAmount("100");
-        userLogging.setSelectedCurrency("USD - null");
+        userLogging.setSelectedCurrency("USD - " + currencyMap.get("USD"));
         userLoggingServiceImpl.saveUserActivityToDb("100", "USD");
         verify(userLoggingRepository).save(userLogging);
-
     }
 }
