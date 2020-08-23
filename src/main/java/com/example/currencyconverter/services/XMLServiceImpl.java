@@ -53,7 +53,6 @@ public class XMLServiceImpl implements XMLService {
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
-
         return rates;
     }
 
@@ -99,7 +98,6 @@ public class XMLServiceImpl implements XMLService {
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
-
         return currencyList;
     }
 }

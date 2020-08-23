@@ -37,7 +37,6 @@ class CurrencyServiceImplTest {
         assertTrue(result);
     }
 
-
     @Test
     void convertCurrency() {
         String amount = "100";
@@ -45,7 +44,6 @@ class CurrencyServiceImplTest {
         String result = currencyServiceImpl.convertCurrency(amount, currencyRate);
         assumeTrue(result.equals("117.700"));
     }
-
 
     @Test
     void currentFxRates() {
