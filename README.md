@@ -5,7 +5,7 @@
 
 ![Example screenshot](./img/1.jpg)
 
-* Or in the application root folder run command(if maven is installed).
+* Or in the application root folder run command(if maven is installed):
 
 ```
  mvn package
